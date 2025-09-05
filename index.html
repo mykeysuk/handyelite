@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HandyElite - Professional Home Services</title>
+    <link rel="icon" type="image/png" href="Blue.png">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+        
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMFbQ9yqsnS1XS2fFoif70UYLzwhs35Fg",
+            authDomain: "handyelite-services.firebaseapp.com",
+            projectId: "handyelite-services",
+            storageBucket: "handyelite-services.firebasestorage.app",
+            messagingSenderId: "679927241539",
+            appId: "1:679927241539:web:53c06fba53b1d301efadf6",
+            measurementId: "G-MHRNL9CY4C"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+        
+        // Make Firebase available globally
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseAnalytics = analytics;
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>
+                    <img src="Blue.png" alt="HandyElite logo" class="brand-logo"> <span class="brand-name">HandyElite</span>
+                </h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#reviews" class="nav-link">Reviews</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li id="auth-buttons">
+                    <button class="btn btn-primary login-btn" onclick="openLoginModal()">Login</button>
+                    <button class="btn btn-secondary" onclick="openSignupModal()">Sign Up</button>
+                    <button class="btn btn-phone" onclick="openPhoneLoginModal()">
+                        <i class="fas fa-phone"></i> Phone Login
+                    </button>
+                </li>
+                <li id="user-menu" style="display: none;">
+                    <div class="user-dropdown">
+                        <button class="user-btn" onclick="toggleUserMenu()">
+                            <i class="fas fa-user"></i>
+                            <span id="user-name">User</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="user-dropdown-menu">
+                            <a href="#" onclick="showUserDashboard()"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                            <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to <span class="brand-highlight">HandyElite</span></h1>
+            <p class="hero-subtitle">Professional home services at your fingertips. Quality, reliability, and excellence in every job.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="scrollToSection('services')">Book Now</button>
+                <button class="btn btn-secondary" onclick="scrollToSection('about')">Learn More</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-gallery" aria-label="HandyElite services showcase">
+                <div class="hero-card hero-card-1">
+                    <img src="electric.png" alt="Professional electric service">
+                    <span class="hero-badge">Electrician</span>
+                </div>
+                <div class="hero-card hero-card-2">
+                    <img src="carpenter.png" alt="Professional Carpentry">
+                    <span class="hero-badge">Carpenter</span>
+                </div>
+                <div class="hero-card hero-card-3">
+                    <img src="acrepair.png" alt="AC Repair service">
+                    <span class="hero-badge">AC Repair</span>
+                </div>
+                <div class="hero-card hero-card-4">
+                    <img src="plumber.png" alt="House plumber expert">
+                    <span class="hero-badge">Plumber</span>
+                </div>
+                <div class="hero-card hero-card-5">
+                    <img src="masonate.png" alt="Masonate work">
+                    <span class="hero-badge">Masonate</span>
+                </div>
+                <div class="hero-card hero-card-6">
+                    <img src="https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=1200&auto=format&fit=crop" alt="Landscaping garden service">
+                    <span class="hero-badge">Interiors</span>
+                </div>
+                <div class="hero-card hero-card-7">
+                    <img src="pest.png" alt="Pest Control">
+                    <span class="hero-badge">Pest Control</span>
+                </div>
+                <div class="hero-card hero-card-8">
+                    <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1200&auto=format&fit=crop" alt="House cleaning team">
+                    <span class="hero-badge">Wall Panels</span>
+                </div>
+            </div>
+            <div class="floating-card">
+                <i class="fas fa-star"></i>
+                <span>4.9/5 Rating</span>
+            </div>
+        </div>
+    </section>
+
+    
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <h2 class="section-title">Our Services</h2>
+            <p class="section-subtitle">Professional home services delivered with excellence</p>
+            
+            <div class="services-grid">
+                <div class="service-card" data-service="electrician">
+                    <div class="service-media"><img src="electric.png" alt="Professional Electric Service"></div>
+                    <h3>Electrician</h3>
+                    <p>Safe wiring, lighting installs, and fault fixes by licensed electricians with quality assurance.</p>
+                    <button class="btn btn-primary book-btn" onclick="openBookingModal('Electrician')">Book Now</button>
+                </div>
+
+                <div class="service-card" data-service="carpenter">
+                    <div class="service-media"><img src="carpenter.png" alt="Professional Carpentry"></div>
+                    <h3>Carpenter</h3>
+                    <p>Custom woodwork, furniture repairs, and fittings executed with precision and durability.</p>
+                    <button class="btn btn-primary book-btn" onclick="openBookingModal('Carpenter')">Book Now</button>
+                </div>
+
+                <div class="service-card" data-service="ac-repair">
+                    <div class="service-media"><img src="acrepair.png" alt="AC Repair Service"></div>
+                    <h3>AC Repair</h3>
+                    <p>AC servicing, gas refilling, and breakdown repairs to keep your cooling efficient.</p>
+                    <button class="btn btn-primary book-btn" onclick="openBookingModal('AC Repair')">Book Now</button>
+                </div>
+
+                <div class="service-card" data-service="plumber">
+                    <div class="service-media"><img src="plumber.png" alt="Expert Plumber"></div>
+                    <h3>Plumber</h3>
+                    <p>Leak fixes, new fittings, and bathroom/kitchen plumbing solutions done right the first time.</p>
+                    <button class="btn btn-primary book-btn" onclick="openBookingModal('Plumber')">Book Now</button>
+                </div>
+
+                <div class="service-card" data-service="masonate">
+                    <div class="service-media"><img src="masonate.png" alt="Masonate Work"></div>
+                    <h3>Masonate</h3>
+                    <p>Wall, tile, and structural masonry work for durable finishes and solid construction.</p>
+                    <button class="btn btn-primary book-btn" onclick="openBookingModal('Masonate')">Book Now</button>
+                </div>
+
+                <div class="service-card" data-service="interior-design">
+                    <div class="service-media"><img src="https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=1200&auto=format&fit=crop" alt="Interior Designing"></div>
+                    <h3>Interior Designing</h3>
+                    <p>Space planning, decor, and bespoke interiors that blend aesthetics with functionality.</p>
+                    <button class="btn btn-primary book-btn" onclick="openBookingModal('Interior Designing')">Book Now</button>
+                </div>
+
+                <div class="service-card" data-service="pest-control">
+                    <div class="service-media"><img src="pest.png" alt="Pest Control"></div>
+                    <h3>Pest Control</h3>
+                    <p>Odourless, safe pest treatments targeting termites, cockroaches, ants, and more.</p>
+                    <button class="btn btn-primary book-btn" onclick="openBookingModal('Pest Control')">Book Now</button>
+                </div>
+
+                <div class="service-card" data-service="wall-panels">
+                    <div class="service-media"><img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1200&auto=format&fit=crop" alt="Wall Panels"></div>
+                    <h3>Wall Panels</h3>
+                    <p>Modern wall panelling solutions for a premium look with acoustic and thermal benefits.</p>
+                    <button class="btn btn-primary book-btn" onclick="openBookingModal('Wall Panels')">Book Now</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">About HandyElite</h2>
+                    <p>HandyElite is your trusted partner for all home maintenance and improvement needs. With years of experience and a team of certified professionals, we deliver exceptional service quality that exceeds expectations.</p>
+                    <div class="features">
+                        <div class="feature">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Licensed & Insured</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-clock"></i>
+                            <span>24/7 Availability</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Local Service</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Professional Service">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="reviews">
+        <div class="container">
+            <h2 class="section-title">Customer Reviews</h2>
+            <p class="section-subtitle">What our customers say about us</p>
+            
+            <div class="reviews-marquee">
+            <div class="reviews-grid" id="reviewsTrack">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="John D.">
+                            <div>
+                                <h4>John D.</h4>
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>"Excellent plumbing service! The technician was professional and fixed our issue quickly. Highly recommended!"</p>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Sarah M.">
+                            <div>
+                                <h4>Sarah M.</h4>
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>"HandyElite transformed our backyard with amazing landscaping work. The team was creative and professional."</p>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Mike R.">
+                            <div>
+                                <h4>Mike R.</h4>
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>"Outstanding electrical work! They installed new lighting throughout our home and the results are amazing."</p>
+                </div>
+            </div>
+            </div>
+
+            <div class="add-review">
+                <h3>Share Your Experience</h3>
+                <form class="review-form" id="reviewForm">
+                    <div class="form-group">
+                        <input type="text" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <select required>
+                            <option value="">Select Service</option>
+                            <option value="carpentry">Carpentry</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="painting">Painting</option>
+                            <option value="landscaping">Landscaping</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="rating-input">
+                            <span>Rating:</span>
+                            <div class="stars-input">
+                                <i class="far fa-star" data-rating="1"></i>
+                                <i class="far fa-star" data-rating="2"></i>
+                                <i class="far fa-star" data-rating="3"></i>
+                                <i class="far fa-star" data-rating="4"></i>
+                                <i class="far fa-star" data-rating="5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Your Review" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Contact Us</h2>
+            <p class="section-subtitle">Get in touch for any inquiries or special requests</p>
+            
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h4>Phone</h4>
+                            <p>+91 7983325204</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>mykeysindia@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h4>Address</h4>
+                            <p>116, Jaipur House, Agra</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form class="contact-form" id="contactForm">
+                    <h3>Send us a Message</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" name="firstName" id="firstName" placeholder="First Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="lastName" id="lastName" placeholder="Last Name" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" id="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" name="phone" id="phone" placeholder="Phone Number" required>
+                    </div>
+                    <div class="form-group">
+                        <select name="service" id="service" required>
+                            <option value="">Select Service</option>
+                            <option value="carpentry">Carpentry</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="painting">Painting</option>
+                            <option value="landscaping">Landscaping</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="message" id="message" placeholder="Describe your service needs" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- WhatsApp Chat Widget -->
+    <div class="whatsapp-widget" id="whatsappWidget">
+        <div class="whatsapp-toggle" onclick="openWhatsAppChat()">
+            <i class="fab fa-whatsapp"></i>
+            <span class="whatsapp-text">Chat with us</span>
+        </div>
+        <div class="whatsapp-tooltip">
+            <p>Click to start WhatsApp chat</p>
+            <div class="tooltip-arrow"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><img src="Blue.png" alt="HandyElite logo" class="brand-logo"> HandyElite</h3>
+                    <p>Your trusted partner for professional home services. Quality, reliability, and excellence in every job.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.instagram.com/handy.elite?igsh=OWlmZ2phNjVsZG1w" target="_blank" rel="noopener noreferrer" title="Follow us on Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#services">Carpentry</a></li>
+                        <li><a href="#services">Plumbing</a></li>
+                        <li><a href="#services">Electrical</a></li>
+                        <li><a href="#services">Cleaning</a></li>
+                        <li><a href="#services">Painting</a></li>
+                        <li><a href="#services">Landscaping</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#reviews">Reviews</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe for updates and special offers</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 HandyElite. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Booking Modal -->
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBookingModal()">&times;</span>
+            <h2>Book Service</h2>
+            <form class="booking-form" id="bookingForm">
+                <div class="form-group">
+                    <label>Service</label>
+                    <input type="text" id="modalService" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" name="lastName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Date</label>
+                    <input type="date" name="preferredDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Time</label>
+                    <select name="preferredTime" required>
+                        <option value="">Select Time</option>
+                        <option value="morning">Morning (8 AM - 12 PM)</option>
+                        <option value="afternoon">Afternoon (12 PM - 4 PM)</option>
+                        <option value="evening">Evening (4 PM - 8 PM)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Service Description</label>
+                    <textarea name="serviceDescription" placeholder="Describe what you need" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select name="paymentMethod" required>
+                        <option value="cash" selected>Cash on Service</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLoginModal()">&times;</span>
+            <h2>Login to Your Account</h2>
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <div class="auth-switch">
+                    <p>Don't have an account? <a href="#" onclick="switchToSignup()">Sign up here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSignupModal()">&times;</span>
+            <h2>Create Your Account</h2>
+            <form class="auth-form" id="signupForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="signupFirstName">First Name</label>
+                        <input type="text" id="signupFirstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupLastName">Last Name</label>
+                        <input type="text" id="signupLastName" name="lastName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">Phone Number</label>
+                    <input type="tel" id="signupPhone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" name="password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" name="confirmPassword" required>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="agreeTerms" required>
+                        <span class="checkmark"></span>
+                        I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
+                <div class="auth-switch">
+                    <p>Already have an account? <a href="#" onclick="switchToLogin()">Login here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Phone Login Modal -->
+    <div class="modal" id="phoneLoginModal">
+        <div class="modal-content">
+            <span class="close" onclick="closePhoneLoginModal()">&times;</span>
+            <h2>Login with Phone Number</h2>
+            
+            <!-- Phone Number Input Step -->
+            <div id="phoneInputStep" class="auth-step">
+                <form class="auth-form" id="phoneForm">
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <div class="phone-input-container">
+                            <select id="countryCode" class="country-code">
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+91">🇮🇳 +91</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+86">🇨🇳 +86</option>
+                                <option value="+81">🇯🇵 +81</option>
+                                <option value="+49">🇩🇪 +49</option>
+                                <option value="+33">🇫🇷 +33</option>
+                                <option value="+39">🇮🇹 +39</option>
+                                <option value="+34">🇪🇸 +34</option>
+                                <option value="+55">🇧🇷 +55</option>
+                            </select>
+                            <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="Enter phone number" required>
+                        </div>
+                        <small class="form-help">We'll send you a verification code via SMS</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Send OTP
+                    </button>
+                </form>
+                <div class="auth-switch">
+                    <p>Prefer email login? <a href="#" onclick="switchToEmailLogin()">Login with email</a></p>
+                </div>
+            </div>
+            
+            <!-- OTP Verification Step -->
+            <div id="otpVerificationStep" class="auth-step" style="display: none;">
+                <div class="otp-header">
+                    <h3>Enter Verification Code</h3>
+                    <p>We sent a 6-digit code to <span id="displayPhoneNumber"></span></p>
+                    <button class="resend-btn" onclick="resendOTP()">Resend Code</button>
+                </div>
+                <form class="auth-form" id="otpForm">
+                    <div class="form-group">
+                        <label for="otpCode">Verification Code</label>
+                        <div class="otp-input-container">
+                            <input type="text" id="otpCode" name="otpCode" maxlength="6" placeholder="000000" required>
+                        </div>
+                        <small class="form-help">Enter the 6-digit code from your SMS</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Verify & Login
+                    </button>
+                </form>
+                <div class="auth-switch">
+                    <p>Wrong number? <a href="#" onclick="backToPhoneInput()">Change phone number</a></p>
+                </div>
+            </div>
+            
+            <!-- New User Registration Step -->
+            <div id="newUserStep" class="auth-step" style="display: none;">
+                <h3>Complete Your Profile</h3>
+                <p>This phone number is new to us. Please provide some additional information:</p>
+                <form class="auth-form" id="newUserForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUserFirstName">First Name</label>
+                            <input type="text" id="newUserFirstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUserLastName">Last Name</label>
+                            <input type="text" id="newUserLastName" name="lastName" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserEmail">Email Address (Optional)</label>
+                        <input type="email" id="newUserEmail" name="email">
+                        <small class="form-help">We'll use this for important updates</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Complete Registration
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard Modal -->
+    <div class="modal" id="userDashboardModal">
+        <div class="modal-content dashboard-content">
+            <span class="close" onclick="closeUserDashboard()">&times;</span>
+            <h2>User Dashboard</h2>
+            <div class="dashboard-tabs">
+                <button class="tab-btn active" onclick="showTab('profile')">Profile</button>
+                <button class="tab-btn" onclick="showTab('bookings')">Bookings</button>
+                <button class="tab-btn" onclick="showTab('settings')">Settings</button>
+            </div>
+            
+            <div class="tab-content" id="profile-tab">
+                <div class="profile-info">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-details">
+                        <h3 id="profileName">Loading...</h3>
+                        <p id="profileEmail">Loading...</p>
+                        <p id="profilePhone">Loading...</p>
+                        <p id="profileJoinDate">Loading...</p>
+                    </div>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <h4 id="totalBookings">0</h4>
+                        <p>Total Bookings</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-star"></i>
+                        <h4 id="userRating">5.0</h4>
+                        <p>Average Rating</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="bookings-tab" style="display: none;">
+                <div class="bookings-list" id="bookingsList">
+                    <p>Loading your bookings...</p>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="settings-tab" style="display: none;">
+                <form class="settings-form" id="settingsForm">
+                    <h3>Update Profile</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateFirstName">First Name</label>
+                            <input type="text" id="updateFirstName" name="firstName">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateLastName">Last Name</label>
+                            <input type="text" id="updateLastName" name="lastName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatePhone">Phone Number</label>
+                        <input type="tel" id="updatePhone" name="phone">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+                
+                <div class="password-section">
+                    <h3>Change Password</h3>
+                    <form class="password-form" id="passwordForm">
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" name="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" name="newPassword" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmNewPassword">Confirm New Password</label>
+                            <input type="password" id="confirmNewPassword" name="confirmNewPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-secondary">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- reCAPTCHA container for phone authentication -->
+    <div id="recaptcha-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
