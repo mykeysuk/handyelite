@@ -1,37 +1,20 @@
-// DOM Content Loaded - MAIN INITIALIZATION
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM Content Loaded - Main Initialization');
-    
-    // Initialize all functionality
+// DOM Content Loaded - MAIN INITIALIZATION (guarded to avoid double init)
+function initializeAllOnce() {
+    if (window.__appInitialized) {
+        return;
+    }
+    window.__appInitialized = true;
+    console.log('🚀 Initializing app (once)');
     initializeWebsite();
     initializeEmailJS();
-    
-    // Test if functions are available immediately
-    console.log('🔍 Testing function availability on DOM load...');
-    if (typeof openBookingModal === 'function') {
-        console.log('✅ openBookingModal is available as local function');
-    } else {
-        console.error('❌ openBookingModal is NOT available as local function');
+    // Set booking notification EmailJS template id
+    if (typeof setBookingEmailTemplateId === 'function') {
+        setBookingEmailTemplateId('template_d4oxu7k');
     }
-    
-    if (typeof window.openBookingModal === 'function') {
-        console.log('✅ openBookingModal is available on window object');
-    } else {
-        console.error('❌ openBookingModal is NOT available on window object');
-    }
-    
-    // Test booking modal functionality
-    console.log('Testing booking modal elements...');
-    const modal = document.getElementById('bookingModal');
-    const modalService = document.getElementById('modalService');
-    const modalPrice = document.getElementById('modalPrice');
-    
-    if (modal && modalService && modalPrice) {
-        console.log('✅ All booking modal elements found');
-    } else {
-        console.error('❌ Missing booking modal elements:', { modal, modalService, modalPrice });
-    }
-});
+    initializeFirebase();
+}
+
+document.addEventListener('DOMContentLoaded', initializeAllOnce);
 
 // Initialize EmailJS
 function initializeEmailJS() {
@@ -42,6 +25,49 @@ function initializeEmailJS() {
         console.log('EmailJS initialized successfully');
     } else {
         console.warn('EmailJS not loaded. Contact form will use fallback method.');
+    }
+}
+
+// ==================== EMAILJS: BOOKING NOTIFICATION ====================
+// Separate template ID for booking emails (set this from your config)
+let EMAILJS_BOOKING_TEMPLATE_ID = 'template_booking_placeholder';
+
+function setBookingEmailTemplateId(templateId) {
+    if (templateId && typeof templateId === 'string') {
+        EMAILJS_BOOKING_TEMPLATE_ID = templateId;
+    }
+}
+
+function buildBookingEmailParams(bookingData, bookingId) {
+    const userFullName = `${bookingData.firstName || ''} ${bookingData.lastName || ''}`.trim();
+    return {
+        to_name: 'Handy Elite Team',
+        booking_id: bookingId || bookingData.bookingId || '',
+        service_name: bookingData.service || '',
+        preferred_date: bookingData.preferredDate || '',
+        preferred_time: bookingData.preferredTime || '',
+        status: bookingData.status || 'Pending',
+        payment_method: bookingData.paymentMethod || 'cash',
+        service_description: bookingData.serviceDescription || '',
+        user_name: userFullName || (currentUser && currentUser.displayName) || '',
+        user_email: bookingData.email || (currentUser && currentUser.email) || '',
+        user_phone: bookingData.phone || '',
+        created_at: new Date().toISOString()
+    };
+}
+
+async function sendBookingNotificationEmail(bookingData, bookingId) {
+    try {
+        if (typeof emailjs === 'undefined') {
+            console.warn('EmailJS not available; skipping booking notification email');
+            return;
+        }
+        const params = buildBookingEmailParams(bookingData, bookingId);
+        await emailjs.send('service_34ym3vr', EMAILJS_BOOKING_TEMPLATE_ID, params);
+        console.log('Booking notification email sent');
+    } catch (err) {
+        console.error('Failed to send booking notification email:', err);
+        // Non-blocking: do not interrupt booking flow
     }
 }
 
@@ -315,6 +341,8 @@ function handleContactSubmission(e) {
     // Check if EmailJS is available
     if (typeof emailjs !== 'undefined') {
         // Send email using EmailJS
+        // Add submission timestamp for the email template
+        templateParams.submitted_at = new Date().toISOString();
         emailjs.send('service_34ym3vr', 'template_fa48zah', templateParams)
             .then(function(response) {
                 console.log('SUCCESS!', response.status, response.text);
@@ -560,7 +588,7 @@ function showNotification(message, type = 'info') {
         padding: 1rem 1.5rem;
         border-radius: 10px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        z-index: 3000;
+        z-index: 10001; /* above modal backdrop/content */
         animation: slideInRight 0.3s ease;
         max-width: 400px;
     `;
@@ -788,6 +816,8 @@ function setupAuthStateListener() {
                 loadUserData(user.uid);
                 // Subscribe to bookings in realtime
                 startBookingsSubscription(user.uid);
+                // Populate table once on login
+                fetchAndPopulateBookingsTable();
             } else {
                 console.log('User signed out');
                 // Unsubscribe from bookings feed
@@ -1026,7 +1056,7 @@ async function storeUserData(userId, userData) {
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
             totalBookings: 0,
-            averageRating: 5.0
+            averageRating: 4.5
         });
         
         console.log('User data stored successfully');
@@ -1415,51 +1445,33 @@ async function handleProfileUpdate(e) {
     }
 }
 
-// Handle password change
+// Handle password reset via email
 async function handlePasswordChange(e) {
     e.preventDefault();
     
-    if (!currentUser) {
-        showNotification('Please log in to change your password', 'error');
-        return;
-    }
+    const resetEmailEl = document.getElementById('resetEmail');
+    const email = (resetEmailEl && resetEmailEl.value) || (currentUser && currentUser.email) || '';
     
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-    
-    // Validate passwords match
-    if (newPassword !== confirmNewPassword) {
-        showNotification('New passwords do not match', 'error');
+    if (!email) {
+        showNotification('Please enter your email address', 'error');
         return;
     }
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
-    
-    // Show loading state
     submitBtn.classList.add('loading');
-    submitBtn.textContent = 'Changing...';
+    submitBtn.textContent = 'Sending...';
     
     try {
-        const { updatePassword, reauthenticateWithCredential, EmailAuthProvider } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-        
-        // Re-authenticate user
-        const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
-        await reauthenticateWithCredential(currentUser, credential);
-        
-        // Update password
-        await updatePassword(currentUser, newPassword);
-        
-        showNotification('Password changed successfully!', 'success');
-        e.target.reset(); // Clear form
-        
+        const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        await sendPasswordResetEmail(firebaseAuth, email);
+        showNotification('Password reset email sent. Check your inbox.', 'success');
+        e.target.reset();
     } catch (error) {
-        console.error('Error changing password:', error);
+        console.error('Error sending reset email:', error);
         handleAuthError(error);
     } finally {
-        // Reset button state
         submitBtn.classList.remove('loading');
-        submitBtn.textContent = 'Change Password';
+        submitBtn.textContent = 'Send Reset Link';
     }
 }
 
@@ -1599,9 +1611,7 @@ function showTab(tabName) {
     
     // Load data for specific tabs
     if (tabName === 'bookings' && currentUser) {
-        loadUserBookings(currentUser.uid).then(bookings => {
-            displayUserBookings(bookings);
-        });
+        fetchAndPopulateBookingsTable();
     } else if (tabName === 'settings' && currentUser) {
         loadUserData(currentUser.uid).then(userData => {
             populateSettingsForm(userData);
@@ -1616,7 +1626,8 @@ function updateUserDashboard(userData) {
     document.getElementById('profilePhone').textContent = userData.phone || 'Not provided';
     document.getElementById('profileJoinDate').textContent = `Member since ${new Date(userData.createdAt?.toDate()).toLocaleDateString()}`;
     document.getElementById('totalBookings').textContent = userData.totalBookings || 0;
-    document.getElementById('userRating').textContent = userData.averageRating || '5.0';
+    // Force display of 4.5 as requested
+    document.getElementById('userRating').textContent = '4.5';
 }
 
 // Populate settings form with current user data
@@ -1628,24 +1639,43 @@ function populateSettingsForm(userData) {
 
 // Display user bookings
 function displayUserBookings(bookings) {
-    const bookingsList = document.getElementById('bookingsList');
-    
-    if (bookings.length === 0) {
-        bookingsList.innerHTML = '<p>No bookings found. <a href="#services" onclick="closeUserDashboard()">Book a service now!</a></p>';
+    const table = document.getElementById('bookingsTable');
+    const tbody = document.getElementById('bookingsTableBody');
+    const container = document.getElementById('bookingsList');
+    if (!table || !tbody || !container) return;
+
+    if (!Array.isArray(bookings) || bookings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6">No bookings found. <a href="#services" onclick="closeUserDashboard()">Book a service now!</a></td></tr>`;
         return;
     }
-    
-    bookingsList.innerHTML = bookings.map(booking => `
-        <div class="booking-item">
-            <h4>${booking.service}</h4>
-            <p><strong>Date:</strong> ${new Date(booking.preferredDate).toLocaleDateString()}</p>
-            <p><strong>Time:</strong> ${booking.preferredTime}</p>
-            <p><strong>Status:</strong> <span class="booking-status ${normalizeStatusClass(booking.status)}">${booking.status}</span></p>
-            ${booking.id || booking.bookingId ? `<p><strong>Booking ID:</strong> ${(booking.bookingId || booking.id)}</p>` : ''}
-            <p><strong>Booked on:</strong> ${booking.createdAt?.toDate ? new Date(booking.createdAt.toDate()).toLocaleDateString() : ''}</p>
-            <button class="btn btn-secondary" onclick="viewBookingDetails('${booking.bookingId || booking.id}')">View Details</button>
-        </div>
-    `).join('');
+
+    tbody.innerHTML = bookings.map(b => {
+        const createdOn = b.createdAt?.toDate ? new Date(b.createdAt.toDate()).toLocaleDateString() : '';
+        const bookingDate = b.preferredDate ? new Date(b.preferredDate).toLocaleDateString() : '';
+        const statusClass = normalizeStatusClass(b.status);
+        const bookingId = (b.bookingId || b.id || '');
+        return `
+            <tr>
+                <td>${b.service || ''}</td>
+                <td>${bookingDate}</td>
+                <td>${b.preferredTime || ''}</td>
+                <td><span class="booking-status ${statusClass}">${b.status || 'Pending'}</span></td>
+                <td>${bookingId}</td>
+                <td><button class="btn btn-secondary" onclick="viewBookingDetails('${bookingId}')">Details</button></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Explicit function to fetch and populate bookings table
+async function fetchAndPopulateBookingsTable() {
+    if (!currentUser) return;
+    try {
+        const bookings = await loadUserBookings(currentUser.uid);
+        displayUserBookings(bookings);
+    } catch (e) {
+        console.error('Failed to fetch bookings:', e);
+    }
 }
 
 // Normalize status value to a CSS-friendly class
@@ -1727,9 +1757,15 @@ function setupEnhancedBookingForm() {
                     totalBookings: increment(1)
                 });
                 
+                // Non-blocking: send booking notification email
+                const emailBookingData = { ...bookingData, status: 'Pending' };
+                sendBookingNotificationEmail(emailBookingData, bookingId);
+
                 this.reset();
                 closeBookingModal();
                 showNotification('Booking confirmed! We\'ll contact you soon to confirm details.', 'success');
+                // Refresh table immediately after booking
+                fetchAndPopulateBookingsTable();
                 
             } catch (error) {
                 console.error('Error processing booking:', error);
@@ -1789,40 +1825,7 @@ async function autoFillBookingForm() {
 // ==================== INITIALIZATION ====================
 
 // Initialize Firebase when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM Content Loaded - Main Initialization');
-    
-    // Initialize all functionality
-    initializeWebsite();
-    initializeEmailJS();
-    initializeFirebase();
-    
-    // Test if functions are available immediately
-    console.log('🔍 Testing function availability on DOM load...');
-    if (typeof openBookingModal === 'function') {
-        console.log('✅ openBookingModal is available as local function');
-    } else {
-        console.error('❌ openBookingModal is NOT available as local function');
-    }
-    
-    if (typeof window.openBookingModal === 'function') {
-        console.log('✅ openBookingModal is available on window object');
-    } else {
-        console.error('❌ openBookingModal is NOT available on window object');
-    }
-    
-    // Test booking modal functionality
-    console.log('Testing booking modal elements...');
-    const modal = document.getElementById('bookingModal');
-    const modalService = document.getElementById('modalService');
-    const modalPrice = document.getElementById('modalPrice');
-    
-    if (modal && modalService && modalPrice) {
-        console.log('✅ All booking modal elements found');
-    } else {
-        console.error('❌ Missing booking modal elements:', { modal, modalService, modalPrice });
-    }
-});
+document.addEventListener('DOMContentLoaded', initializeAllOnce);
 
 // Make authentication functions available globally
 window.openLoginModal = openLoginModal;
