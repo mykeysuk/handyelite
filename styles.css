@@ -1691,6 +1691,19 @@ textarea:focus {
     margin-bottom: 2rem;
 }
 
+/* Reset Password button visibility and contrast in settings */
+.password-form .btn.btn-secondary {
+    background: #111827; /* dark gray/near black */
+    color: #ffffff;
+    border: 2px solid #111827;
+}
+
+.password-form .btn.btn-secondary:hover {
+    background: #6366f1; /* purple hover as intended */
+    border-color: #6366f1;
+    color: #ffffff;
+}
+
 .settings-form h3,
 .password-form h3 {
     color: #1e293b;
