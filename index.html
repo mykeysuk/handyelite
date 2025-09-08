@@ -723,7 +723,7 @@
                     </div>
                     <div class="stat-card">
                         <i class="fas fa-star"></i>
-                        <h4 id="userRating">5.0</h4>
+                        <h4 id="userRating">4.5</h4>
                         <p>Average Rating</p>
                     </div>
                 </div>
@@ -731,7 +731,21 @@
             
             <div class="tab-content" id="bookings-tab" style="display: none;">
                 <div class="bookings-list" id="bookingsList">
-                    <p>Loading your bookings...</p>
+                    <table id="bookingsTable" style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Service</th>
+                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Booking date</th>
+                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Time</th>
+                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Status</th>
+                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Booking ID</th>
+                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                            <tr><td colspan="6" style="padding:8px;">Loading your bookings...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
@@ -756,21 +770,14 @@
                 </form>
                 
                 <div class="password-section">
-                    <h3>Change Password</h3>
+                    <h3>Reset Password</h3>
                     <form class="password-form" id="passwordForm">
+                        <p style="color:#64748b; margin-bottom:1rem;">We'll email a secure link to reset your password.</p>
                         <div class="form-group">
-                            <label for="currentPassword">Current Password</label>
-                            <input type="password" id="currentPassword" name="currentPassword" required>
+                            <label for="resetEmail">Email Address</label>
+                            <input type="email" id="resetEmail" name="resetEmail" placeholder="your@email.com" required>
                         </div>
-                        <div class="form-group">
-                            <label for="newPassword">New Password</label>
-                            <input type="password" id="newPassword" name="newPassword" required minlength="6">
-                        </div>
-                        <div class="form-group">
-                            <label for="confirmNewPassword">Confirm New Password</label>
-                            <input type="password" id="confirmNewPassword" name="confirmNewPassword" required>
-                        </div>
-                        <button type="submit" class="btn btn-secondary">Change Password</button>
+                        <button type="submit" class="btn btn-secondary">Send Reset Link</button>
                     </form>
                 </div>
             </div>
