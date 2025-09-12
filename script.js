@@ -40,8 +40,30 @@ function setBookingEmailTemplateId(templateId) {
 
 function buildBookingEmailParams(bookingData, bookingId) {
     const userFullName = `${bookingData.firstName || ''} ${bookingData.lastName || ''}`.trim();
+    const composedMessage = `New booking request\n\n` +
+        `Booking ID: ${bookingId || bookingData.bookingId || ''}\n` +
+        `Service: ${bookingData.service || ''}\n` +
+        `Preferred Date: ${bookingData.preferredDate || ''}\n` +
+        `Preferred Time: ${bookingData.preferredTime || ''}\n` +
+        `Payment Method: ${bookingData.paymentMethod || 'cash'}\n` +
+        `Status: ${bookingData.status || 'Pending'}\n` +
+        `\nCustomer\n` +
+        `Name: ${userFullName || (currentUser && currentUser.displayName) || ''}\n` +
+        `Email: ${bookingData.email || (currentUser && currentUser.email) || ''}\n` +
+        `Phone: ${bookingData.phone || ''}\n` +
+        `\nDescription\n${bookingData.serviceDescription || ''}`;
     return {
+        // Generic fields
         to_name: 'Handy Elite Team',
+        reply_to: bookingData.email || (currentUser && currentUser.email) || '',
+        message: composedMessage,
+        message_html: composedMessage.replace(/\n/g, '<br>'),
+        submitted_at: new Date().toISOString(),
+        from_name: userFullName || (currentUser && currentUser.displayName) || '',
+        from_email: bookingData.email || (currentUser && currentUser.email) || '',
+        from_phone: bookingData.phone || '',
+        
+        // Canonical booking fields
         booking_id: bookingId || bookingData.bookingId || '',
         service_name: bookingData.service || '',
         preferred_date: bookingData.preferredDate || '',
@@ -49,10 +71,26 @@ function buildBookingEmailParams(bookingData, bookingId) {
         status: bookingData.status || 'Pending',
         payment_method: bookingData.paymentMethod || 'cash',
         service_description: bookingData.serviceDescription || '',
+        
+        // Canonical user fields
         user_name: userFullName || (currentUser && currentUser.displayName) || '',
         user_email: bookingData.email || (currentUser && currentUser.email) || '',
         user_phone: bookingData.phone || '',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        
+        // Common alias keys to improve template compatibility
+        bookingId: bookingId || bookingData.bookingId || '',
+        service: bookingData.service || '',
+        service_type: bookingData.service || '',
+        customer_name: userFullName || (currentUser && currentUser.displayName) || '',
+        first_name: bookingData.firstName || '',
+        last_name: bookingData.lastName || '',
+        email: bookingData.email || (currentUser && currentUser.email) || '',
+        phone: bookingData.phone || '',
+        // Capitalized variants some templates use
+        Email: bookingData.email || (currentUser && currentUser.email) || '',
+        Phone: bookingData.phone || '',
+        Service: bookingData.service || ''
     };
 }
 
@@ -63,6 +101,7 @@ async function sendBookingNotificationEmail(bookingData, bookingId) {
             return;
         }
         const params = buildBookingEmailParams(bookingData, bookingId);
+        console.log('Sending booking email with params:', params);
         await emailjs.send('service_34ym3vr', EMAILJS_BOOKING_TEMPLATE_ID, params);
         console.log('Booking notification email sent');
     } catch (err) {
@@ -784,6 +823,15 @@ let currentUser = null;
 let phoneAuthConfirmation = null;
 let currentPhoneNumber = null;
 let unsubscribeBookings = null;
+// Realtime Database (for user booking history)
+let firebaseRtdb = null;
+async function ensureRealtimeDb() {
+    if (firebaseRtdb) return firebaseRtdb;
+    const { getDatabase } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+    firebaseRtdb = getDatabase(window.firebaseApp);
+    return firebaseRtdb;
+}
+
 
 // Initialize Firebase when available
 function initializeFirebase() {
@@ -802,6 +850,8 @@ function initializeFirebase() {
         setTimeout(initializeFirebase, 1000);
     }
 }
+
+ 
 
 // Set up authentication state listener
 function setupAuthStateListener() {
@@ -824,6 +874,11 @@ function setupAuthStateListener() {
                 if (typeof unsubscribeBookings === 'function') {
                     unsubscribeBookings();
                     unsubscribeBookings = null;
+                }
+                // Unsubscribe RTDB booking history
+                if (typeof unsubscribeRtdbHistory === 'function') {
+                    unsubscribeRtdbHistory();
+                    unsubscribeRtdbHistory = null;
                 }
             }
         });
@@ -1585,6 +1640,11 @@ function showUserDashboard() {
 function closeUserDashboard() {
     document.getElementById('userDashboardModal').style.display = 'none';
     document.body.classList.remove('modal-open');
+    // Unsubscribe RTDB booking history when dashboard closes
+    if (typeof unsubscribeRtdbHistory === 'function') {
+        unsubscribeRtdbHistory();
+        unsubscribeRtdbHistory = null;
+    }
 }
 
 function toggleUserMenu() {
@@ -1612,10 +1672,20 @@ function showTab(tabName) {
     // Load data for specific tabs
     if (tabName === 'bookings' && currentUser) {
         fetchAndPopulateBookingsTable();
+        startRealtimeBookingHistory();
     } else if (tabName === 'settings' && currentUser) {
         loadUserData(currentUser.uid).then(userData => {
             populateSettingsForm(userData);
         });
+        if (typeof unsubscribeRtdbHistory === 'function') {
+            unsubscribeRtdbHistory();
+            unsubscribeRtdbHistory = null;
+        }
+    } else {
+        if (typeof unsubscribeRtdbHistory === 'function') {
+            unsubscribeRtdbHistory();
+            unsubscribeRtdbHistory = null;
+        }
     }
 }
 
@@ -1645,23 +1715,30 @@ function displayUserBookings(bookings) {
     if (!table || !tbody || !container) return;
 
     if (!Array.isArray(bookings) || bookings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6">No bookings found. <a href="#services" onclick="closeUserDashboard()">Book a service now!</a></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6">कोई बुकिंग नहीं मिली। <a href="#services" onclick="closeUserDashboard()">अभी एक सर्विस बुक करें!</a></td></tr>`;
         return;
     }
 
     tbody.innerHTML = bookings.map(b => {
-        const createdOn = b.createdAt?.toDate ? new Date(b.createdAt.toDate()).toLocaleDateString() : '';
-        const bookingDate = b.preferredDate ? new Date(b.preferredDate).toLocaleDateString() : '';
-        const statusClass = normalizeStatusClass(b.status);
+        const createdOn = b.createdAt?.toDate ? new Date(b.createdAt.toDate()).toLocaleDateString('hi-IN') : '';
+        const bookingDate = b.preferredDate ? new Date(b.preferredDate).toLocaleDateString('hi-IN') : '';
+        const statusText = b.status || 'Pending';
+        const statusClass = normalizeStatusClass(statusText);
         const bookingId = (b.bookingId || b.id || '');
+        const isCompleted = String(statusText).toLowerCase() === 'completed';
+        const toggleLabel = isCompleted ? 'Pending करें' : 'Completed करें';
+        
         return `
             <tr>
                 <td>${b.service || ''}</td>
                 <td>${bookingDate}</td>
                 <td>${b.preferredTime || ''}</td>
-                <td><span class="booking-status ${statusClass}">${b.status || 'Pending'}</span></td>
+                <td><span class="booking-status ${statusClass}">${statusText}</span></td>
                 <td>${bookingId}</td>
-                <td><button class="btn btn-secondary" onclick="viewBookingDetails('${bookingId}')">Details</button></td>
+                <td>
+                    <button class="btn btn-secondary" onclick="viewBookingDetails('${bookingId}')">Details</button>
+                    <button class="btn btn-primary" style="margin-left:8px;" onclick="toggleBookingStatus('${bookingId}', '${statusText}')">${toggleLabel}</button>
+                </td>
             </tr>
         `;
     }).join('');
@@ -1706,6 +1783,74 @@ function viewBookingDetails(bookingId) {
     showNotification(`Booking details for ${bookingId}`, 'info');
 }
 
+// Toggle booking status between Pending <=> Completed (Firestore)
+async function toggleBookingStatus(bookingId, currentStatus) {
+    if (!bookingId) return;
+    try {
+        const next = String(currentStatus || 'Pending').toLowerCase() === 'completed' ? 'Pending' : 'Completed';
+        const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const bookingRef = doc(firebaseDb, 'bookings', bookingId);
+        await updateDoc(bookingRef, { status: next, updatedAt: serverTimestamp() });
+        showNotification(`Booking marked as ${next}`, 'success');
+    } catch (err) {
+        console.error('Error toggling booking status:', err);
+        showNotification('Failed to update booking status', 'error');
+    }
+}
+
+// ==================== RTDB BOOKING HISTORY ====================
+let unsubscribeRtdbHistory = null;
+async function startRealtimeBookingHistory() {
+    const historyEl = document.getElementById('booking-history');
+    if (!historyEl || !currentUser) return;
+    const rtdb = await ensureRealtimeDb();
+    const { ref, onValue, off } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+    const userBookingsRef = ref(rtdb, `users/${currentUser.uid}/bookings`);
+    if (typeof unsubscribeRtdbHistory === 'function') unsubscribeRtdbHistory();
+    const handler = onValue(userBookingsRef, (snapshot) => {
+        const bookings = snapshot.val() || {};
+        historyEl.innerHTML = '';
+        Object.keys(bookings).forEach(bookingId => {
+            const b = bookings[bookingId] || {};
+            const item = document.createElement('div');
+            item.className = 'booking-item';
+            item.innerHTML = `
+                <h4>${b.service || ''}</h4>
+                <p><strong>Date:</strong> ${b.bookingDate || ''}</p>
+                <p><strong>Time:</strong> ${b.bookingTime || ''}</p>
+                <p><strong>Status:</strong> <span class="booking-status ${b.status ? 'completed' : 'pending'}">${b.status ? 'Completed' : 'Pending'}</span></p>
+                <button class="btn btn-primary" onclick="toggleStatus('${bookingId}')">Change Status</button>
+            `;
+            historyEl.appendChild(item);
+        });
+        if (!Object.keys(bookings).length) {
+            historyEl.innerHTML = '<p>कोई बुकिंग इतिहास नहीं मिला।</p>';
+        }
+    }, (err) => {
+        console.error('RTDB history error:', err);
+    });
+    unsubscribeRtdbHistory = () => off(userBookingsRef, 'value', handler);
+}
+
+async function toggleStatus(bookingId) {
+    if (!currentUser || !bookingId) return;
+    try {
+        const rtdb = await ensureRealtimeDb();
+        const { ref, get, update } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+        const userRef = ref(rtdb, `users/${currentUser.uid}/bookings/${bookingId}`);
+        const snap = await get(userRef);
+        if (!snap.exists()) return;
+        const cur = !!snap.val().status;
+        await update(userRef, { status: !cur });
+        showNotification('Booking status updated!', 'success');
+    } catch (e) {
+        console.error('RTDB toggle error:', e);
+        showNotification('Failed to update status', 'error');
+    }
+}
+
+ 
+
 // Logout function
 async function logout() {
     await signOut();
@@ -1747,6 +1892,21 @@ function setupEnhancedBookingForm() {
                 
                 // Store booking in Firestore
                 const bookingId = await storeBookingData(bookingData);
+                
+                // Also write a simplified record to Realtime Database under users/{uid}/bookings
+                try {
+                    const rtdb = await ensureRealtimeDb();
+                    const { ref, push } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+                    const userBookingsRef = ref(rtdb, `users/${currentUser.uid}/bookings`);
+                    await push(userBookingsRef, {
+                        service: bookingData.service,
+                        bookingDate: bookingData.preferredDate,
+                        bookingTime: bookingData.preferredTime,
+                        status: false
+                    });
+                } catch (e) {
+                    console.warn('RTDB write skipped/failed:', e);
+                }
                 
                 // Update user's total bookings count
                 const { increment } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
@@ -1844,3 +2004,4 @@ window.closeUserDashboard = closeUserDashboard;
 window.toggleUserMenu = toggleUserMenu;
 window.showTab = showTab;
 window.logout = logout;
+window.toggleStatus = toggleStatus;

@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HandyElite - Professional Home Services</title>
-    <link rel="icon" type="image/png" href="Blue.png">
+    <link rel="icon" type="image/png" href="Blue.png?v=1">
+    <link rel="shortcut icon" href="Blue.png?v=1">
+    <link rel="icon" type="image/png" sizes="32x32" href="Blue.png?v=1">
+    <link rel="apple-touch-icon" href="Blue.png?v=1">
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -96,7 +99,11 @@
             </div>
         </div>
         <div class="hero-image">
-            <div class="hero-gallery" aria-label="HandyElite services showcase">
+            <div class="hero-visuals">
+                <div class="hero-left-figure">
+                    <img src="banda.png" alt="Handyman representative">
+                </div>
+                <div class="hero-gallery" aria-label="HandyElite services showcase">
                 <div class="hero-card hero-card-1">
                     <img src="electric.png" alt="Professional electric service">
                     <span class="hero-badge">Electrician</span>
@@ -115,10 +122,10 @@
                 </div>
                 <div class="hero-card hero-card-5">
                     <img src="masonate.png" alt="Masonate work">
-                    <span class="hero-badge">Masonate</span>
+                    <span class="hero-badge">Maisonette</span>
                 </div>
                 <div class="hero-card hero-card-6">
-                    <img src="https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=1200&auto=format&fit=crop" alt="Landscaping garden service">
+                    <img src="interior.png" alt="Interior Designing">
                     <span class="hero-badge">Interiors</span>
                 </div>
                 <div class="hero-card hero-card-7">
@@ -126,8 +133,9 @@
                     <span class="hero-badge">Pest Control</span>
                 </div>
                 <div class="hero-card hero-card-8">
-                    <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1200&auto=format&fit=crop" alt="House cleaning team">
+                    <img src="panel.png" alt="Panels">
                     <span class="hero-badge">Wall Panels</span>
+                </div>
                 </div>
             </div>
             <div class="floating-card">
@@ -176,7 +184,7 @@
 
                 <div class="service-card" data-service="masonate">
                     <div class="service-media"><img src="masonate.png" alt="Masonate Work"></div>
-                    <h3>Masonate</h3>
+                    <h3>Maisonette</h3>
                     <p>Wall, tile, and structural masonry work for durable finishes and solid construction.</p>
                     <button class="btn btn-primary book-btn" onclick="openBookingModal('Masonate')">Book Now</button>
                 </div>
@@ -365,7 +373,7 @@
                         <i class="fas fa-map-marker-alt"></i>
                         <div>
                             <h4>Address</h4>
-                            <p>116, Jaipur House, Agra</p>
+                            <p>Jaipur House, Agra</p>
                         </div>
                     </div>
                 </div>
@@ -514,7 +522,7 @@
                 </div>
                 <div class="form-group">
                     <label>Service Description</label>
-                    <textarea name="serviceDescription" placeholder="Describe what you need" rows="3" required></textarea>
+                    <textarea name="serviceDescription" placeholder="Describe what you need" rows="5" required></textarea>
                 </div>
                 <div class="form-group">
                     <label>Payment Method</label>
@@ -730,22 +738,27 @@
             </div>
             
             <div class="tab-content" id="bookings-tab" style="display: none;">
+                <h3 style="margin-bottom: 1rem; text-align: center;">Your Bookings</h3>
                 <div class="bookings-list" id="bookingsList">
-                    <table id="bookingsTable" style="width:100%; border-collapse: collapse;">
+                    <table class="bookings-table" id="bookingsTable">
                         <thead>
                             <tr>
-                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Service</th>
-                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Booking date</th>
-                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Time</th>
-                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Status</th>
-                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Booking ID</th>
-                                <th style="text-align:left; padding:8px; border-bottom: 1px solid #e2e8f0;">Actions</th>
+                                <th>Service</th>
+                                <th>Booking Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Booking ID</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="bookingsTableBody">
-                            <tr><td colspan="6" style="padding:8px;">Loading your bookings...</td></tr>
+                            <tr><td colspan="6" class="loading-cell">Loading your bookings...</td></tr>
                         </tbody>
                     </table>
+                </div>
+                <div style="margin-top:16px;">
+                    <h3 style="margin:12px 0; color:#1e293b;">Booking History (Realtime)</h3>
+                    <div id="booking-history"></div>
                 </div>
             </div>
             
@@ -769,6 +782,296 @@
                     <button type="submit" class="btn btn-primary">Update Profile</button>
                 </form>
                 
+                <div class="password-section">
+                    <h3>Reset Password</h3>
+                    <form class="password-form" id="passwordForm">
+                        <p style="color:#64748b; margin-bottom:1rem;">We'll email a secure link to reset your password.</p>
+                        <div class="form-group">
+                            <label for="resetEmail">Email Address</label>
+                            <input type="email" id="resetEmail" name="resetEmail" placeholder="your@email.com" required>
+                        </div>
+                        <button type="submit" class="btn btn-secondary">Send Reset Link</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- reCAPTCHA container for phone authentication -->
+    <div id="recaptcha-container"></div>
+
+    <script src="script.js"></script>
+    <!-- Booking Modal -->
+    <div class="modal" id="bookingModal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeBookingModal()">&times;</span>
+            <h2>Book Service</h2>
+            <form class="booking-form" id="bookingForm">
+                <div class="form-group">
+                    <label>Service</label>
+                    <input type="text" id="modalService" name="service" readonly>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" name="lastName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Date</label>
+                    <input type="date" name="preferredDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Time</label>
+                    <select name="preferredTime" required>
+                        <option value="">Select Time</option>
+                        <option value="morning">Morning (8 AM - 12 PM)</option>
+                        <option value="afternoon">Afternoon (12 PM - 4 PM)</option>
+                        <option value="evening">Evening (4 PM - 8 PM)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Service Description</label>
+                    <textarea name="serviceDescription" placeholder="Describe what you need" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select name="paymentMethod" required>
+                        <option value="cash" selected>Cash on Service</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeLoginModal()">&times;</span>
+            <h2>Login to Your Account</h2>
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <div class="auth-switch">
+                    <p>Don't have an account? <a href="#" onclick="switchToSignup()">Sign up here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div class="modal" id="signupModal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeSignupModal()">&times;</span>
+            <h2>Create Your Account</h2>
+            <form class="auth-form" id="signupForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="signupFirstName">First Name</label>
+                        <input type="text" id="signupFirstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupLastName">Last Name</label>
+                        <input type="text" id="signupLastName" name="lastName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">Phone Number</label>
+                    <input type="tel" id="signupPhone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" name="password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" name="confirmPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
+                <div class="auth-switch">
+                    <p>Already have an account? <a href="#" onclick="switchToLogin()">Login here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Phone Login Modal -->
+    <div class="modal" id="phoneLoginModal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closePhoneLoginModal()">&times;</span>
+            <h2>Login with Phone Number</h2>
+            <div id="phoneInputStep" class="auth-step">
+                <form class="auth-form" id="phoneForm">
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <div class="phone-input-container">
+                            <select id="countryCode" class="country-code">
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+91">🇮🇳 +91</option>
+                                <option value="+44">🇬🇧 +44</option>
+                            </select>
+                            <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="Enter phone number" required>
+                        </div>
+                        <small class="form-help">We'll send you a verification code via SMS</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Send OTP
+                    </button>
+                </form>
+                <div class="auth-switch">
+                    <p>Prefer email login? <a href="#" onclick="switchToEmailLogin()">Login with email</a></p>
+                </div>
+            </div>
+            <div id="otpVerificationStep" class="auth-step" style="display:none;">
+                <div class="otp-header">
+                    <h3>Enter Verification Code</h3>
+                    <p>We sent a 6-digit code to <span id="displayPhoneNumber"></span></p>
+                    <button class="resend-btn" onclick="resendOTP()">Resend Code</button>
+                </div>
+                <form class="auth-form" id="otpForm">
+                    <div class="form-group">
+                        <label for="otpCode">Verification Code</label>
+                        <div class="otp-input-container">
+                            <input type="text" id="otpCode" name="otpCode" maxlength="6" placeholder="000000" required>
+                        </div>
+                        <small class="form-help">Enter the 6-digit code from your SMS</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Verify & Login
+                    </button>
+                </form>
+                <div class="auth-switch">
+                    <p>Wrong number? <a href="#" onclick="backToPhoneInput()">Change phone number</a></p>
+                </div>
+            </div>
+            <div id="newUserStep" class="auth-step" style="display:none;">
+                <h3>Complete Your Profile</h3>
+                <p>This phone number is new to us. Please provide some additional information:</p>
+                <form class="auth-form" id="newUserForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUserFirstName">First Name</label>
+                            <input type="text" id="newUserFirstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUserLastName">Last Name</label>
+                            <input type="text" id="newUserLastName" name="lastName" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserEmail">Email Address (Optional)</label>
+                        <input type="email" id="newUserEmail" name="email">
+                        <small class="form-help">We'll use this for important updates</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Complete Registration
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard Modal -->
+    <div class="modal" id="userDashboardModal" style="display:none;">
+        <div class="modal-content dashboard-content">
+            <span class="close" onclick="closeUserDashboard()">&times;</span>
+            <h2>User Dashboard</h2>
+            <div class="dashboard-tabs">
+                <button class="tab-btn active" onclick="showTab('profile')">Profile</button>
+                <button class="tab-btn" onclick="showTab('bookings')">Bookings</button>
+                <button class="tab-btn" onclick="showTab('settings')">Settings</button>
+            </div>
+            <div class="tab-content" id="profile-tab">
+                <div class="profile-info">
+                    <div class="profile-avatar"><i class="fas fa-user"></i></div>
+                    <div class="profile-details">
+                        <h3 id="profileName">Loading...</h3>
+                        <p id="profileEmail">Loading...</p>
+                        <p id="profilePhone">Loading...</p>
+                        <p id="profileJoinDate">Loading...</p>
+                    </div>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <h4 id="totalBookings">0</h4>
+                        <p>Total Bookings</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-star"></i>
+                        <h4 id="userRating">4.5</h4>
+                        <p>Average Rating</p>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-content" id="bookings-tab" style="display:none;">
+                <h3 style="margin-bottom: 1rem; text-align: center;">Your Bookings</h3>
+                <div class="bookings-list" id="bookingsList">
+                    <table class="bookings-table" id="bookingsTable">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Booking Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Booking ID</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                            <tr><td colspan="6" class="loading-cell">Loading your bookings...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top:16px;">
+                    <h3 style="margin:12px 0; color:#1e293b;">Booking History (Realtime)</h3>
+                    <div id="booking-history"></div>
+                </div>
+            </div>
+            <div class="tab-content" id="settings-tab" style="display:none;">
+                <form class="settings-form" id="settingsForm">
+                    <h3>Update Profile</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateFirstName">First Name</label>
+                            <input type="text" id="updateFirstName" name="firstName">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateLastName">Last Name</label>
+                            <input type="text" id="updateLastName" name="lastName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatePhone">Phone Number</label>
+                        <input type="tel" id="updatePhone" name="phone">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
                 <div class="password-section">
                     <h3>Reset Password</h3>
                     <form class="password-form" id="passwordForm">
